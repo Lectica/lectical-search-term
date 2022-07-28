@@ -53,7 +53,7 @@ static PyObject* helloworld(PyObject* self, PyObject * args) {
         ret = PyUnicode_AsUTF8String(string);
         item = PyBytes_AsString(ret);
 
-        sprintf(&regex_str, "[[:<:]]%s[[:>:]]", item);
+        sprintf(regex_str, "[[:<:]]%s[[:>:]]", item);
         regex_return = regcomp(&regex, regex_str, REG_EXTENDED);
         regex_return = regexec(&regex, text, 0, NULL, 0);
 
