@@ -1,0 +1,8 @@
+
+
+# Build & Install
+python3 setup.py build && python3 setup.py install
+
+# Run
+import myModule
+>>> myModule.helloworld([1,3])
