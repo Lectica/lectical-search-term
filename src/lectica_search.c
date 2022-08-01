@@ -1,6 +1,8 @@
 #include <Python.h>
 #include <regex.h>
 
+#define REGEX_STR_LEN 256
+
 
 int _check_list_of_numbers(PyObject *lst, void *address) {
   PyObject *item = NULL;
@@ -34,7 +36,7 @@ void print_result(int return_value){
 
 static PyObject* helloworld(PyObject* self, PyObject * args) {
     // receive 2 parameters. List of terms and text
-    char regex_str[256];
+    char regex_str[REGEX_STR_LEN];
     const char * text = NULL;    PyObject * ret = NULL;    PyObject * pyListOfItems = NULL; PyObject * string;
     PyObject *listOfTerms = PyList_New(0);
     const char * item;
@@ -47,14 +49,29 @@ static PyObject* helloworld(PyObject* self, PyObject * args) {
         goto except;
     }
 
+    // Make sure we own the GIL
+    // Use functions in the interpreter
+    PyGILState_STATE state = PyGILState_Ensure();
+
     for (Py_ssize_t i = 0; i < PyList_GET_SIZE(pyListOfItems); i++) {
         string = PyList_GetItem(pyListOfItems, i);
         if (string == NULL) {printf("Algum erro que eu nao sei o que eh\n"); }
         ret = PyUnicode_AsUTF8String(string);
         item = PyBytes_AsString(ret);
 
-        sprintf(regex_str, "[[:<:]]%s[[:>:]]", item);
+        memset(regex_str, 0, sizeof(char) * REGEX_STR_LEN);
+        // sprintf(regex_str, "[[:<:]]%s[[:>:]]", item);
+        // sprintf(regex_str, "\\b%s\\b", item);
+        sprintf(regex_str, " %s ", item);
         regex_return = regcomp(&regex, regex_str, REG_EXTENDED);
+        if (0 != regex_return) {
+            char buffer[100];
+            printf ("Regex error compiling [%s] \n", regex_str);
+            regerror(regex_return, &regex, buffer, 100);
+            printf("regcomp() failed with '%s'\n", buffer);
+            continue;
+            exit(EXIT_FAILURE);
+        }
         regex_return = regexec(&regex, text, 0, NULL, 0);
 
         if (0 == regex_return) {
@@ -65,12 +82,16 @@ static PyObject* helloworld(PyObject* self, PyObject * args) {
         regfree(&regex);
     }
 
+    // Restore previous GIL state and return
+    PyGILState_Release(state);
+
     return listOfTerms;
 
     // return list of items found
     except:
         Py_XDECREF(ret);
         ret = NULL;
+        Py_XDECREF(listOfTerms);
 }
 
 // PyDOC_STRVAR(lec_doc, "Search list of terms inside text. Return terms found in text.");
