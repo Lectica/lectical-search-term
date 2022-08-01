@@ -94,14 +94,12 @@ static PyObject* helloworld(PyObject* self, PyObject * args) {
         Py_XDECREF(listOfTerms);
 }
 
-// PyDOC_STRVAR(lec_doc, "Search list of terms inside text. Return terms found in text.");
-
 static PyMethodDef myMethods[] = {
     {
-        "helloworld",  /* The function name in python */
-        helloworld,    /* The C function to invoke. */
-        METH_VARARGS,  /* Flag telling Python how to invoke ``helloworld`` */
-        "Search list of items inside text. Return items found in text."   /* The docstring as a C string. */
+        "search_terms_in_text",  /* The function name in python */
+        helloworld,              /* The C function to invoke. */
+        METH_VARARGS,            /* Flag telling Python how to invoke ``helloworld`` */
+        "Search list of terms inside text. Return terms found in text."   /* The docstring as a C string. */
     },
     {NULL, NULL, 0, NULL}
 };
