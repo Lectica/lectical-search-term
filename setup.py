@@ -1,5 +1,11 @@
 
 from distutils.core import setup, Extension
 
-setup(name='myModule', version='1.0', \
-      ext_modules= [Extension('myModule', ['./src/lectica_search.c'])])
+setup(
+    name="lectica",
+    version="0.0.4",
+    author="Alessandro Madruga Correia",
+    description="Lectica C module to search terms in text.",
+    ext_modules=[Extension("lectica",
+                           extra_compile_args=["-O3"],
+                           sources=["./src/lectica_search.c"])])

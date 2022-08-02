@@ -34,7 +34,7 @@ void print_result(int return_value){
 }
 
 
-static PyObject* helloworld(PyObject* self, PyObject * args) {
+static PyObject* search_terms_in_text(PyObject* self, PyObject * args) {
     // receive 2 parameters. List of terms and text
     char regex_str[REGEX_STR_LEN];
     const char * text = NULL;    PyObject * ret = NULL;    PyObject * pyListOfItems = NULL; PyObject * string;
@@ -55,7 +55,7 @@ static PyObject* helloworld(PyObject* self, PyObject * args) {
 
     for (Py_ssize_t i = 0; i < PyList_GET_SIZE(pyListOfItems); i++) {
         string = PyList_GetItem(pyListOfItems, i);
-        if (string == NULL) {printf("Algum erro que eu nao sei o que eh\n"); }
+        if (string == NULL) {printf("Algum erro que eu nao sei o que eh: index [%d] list len [%d]\n", i, PyList_GET_SIZE(pyListOfItems)); }
         ret = PyUnicode_AsUTF8String(string);
         item = PyBytes_AsString(ret);
 
@@ -97,22 +97,22 @@ static PyObject* helloworld(PyObject* self, PyObject * args) {
 static PyMethodDef myMethods[] = {
     {
         "search_terms_in_text",  /* The function name in python */
-        helloworld,              /* The C function to invoke. */
-        METH_VARARGS,            /* Flag telling Python how to invoke ``helloworld`` */
+        search_terms_in_text,    /* The C function to invoke. */
+        METH_VARARGS,            /* Flag telling Python how to invoke ``search_terms_in_text`` */
         "Search list of terms inside text. Return terms found in text."   /* The docstring as a C string. */
     },
     {NULL, NULL, 0, NULL}
 };
 
-
-static struct PyModuleDef myModule = {
+ 
+static struct PyModuleDef lectica = {
     PyModuleDef_HEAD_INIT,
-    "MyModule",
-    "Test module",
+    "lectica",
+    "Lectica module",
     -1, // global state
     myMethods
 };
 
-PyMODINIT_FUNC PyInit_myModule(void){
-    return PyModule_Create(&myModule);
+PyMODINIT_FUNC PyInit_lectica(void){
+    return PyModule_Create(&lectica);
 }
