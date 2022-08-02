@@ -4,5 +4,5 @@
 python3 setup.py build && python3 setup.py install
 
 # Run
-import myModule
->>> myModule.helloworld([1,3])
+import lectica
+>>> lectica.search_terms_in_text("a big text here", ["word1", "word2"])
