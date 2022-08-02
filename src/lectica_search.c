@@ -61,7 +61,7 @@ static PyObject* search_terms_in_text(PyObject* self, PyObject * args) {
         memset(regex_str, 0, sizeof(char) * REGEX_STR_LEN);
         // sprintf(regex_str, "[[:<:]]%s[[:>:]]", item);
         // sprintf(regex_str, "\\b%s\\b", item);
-        sprintf(regex_str, " %s[,.?!]? ", item);
+        sprintf(regex_str, " %s[,.?!;]? ", item);
         regex_return = regcomp(&regex, regex_str, REG_EXTENDED);
         if (0 != regex_return) {
             char buffer[100];
