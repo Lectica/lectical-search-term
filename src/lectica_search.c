@@ -104,7 +104,6 @@ static PyMethodDef myMethods[] = {
     {NULL, NULL, 0, NULL}
 };
 
- 
 static struct PyModuleDef lectica = {
     PyModuleDef_HEAD_INIT,
     "lectica",
