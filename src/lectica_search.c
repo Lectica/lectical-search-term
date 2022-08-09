@@ -61,7 +61,7 @@ static PyObject* search_terms_in_text(PyObject* self, PyObject * args) {
         memset(regex_str, 0, sizeof(char) * REGEX_STR_LEN);
         // sprintf(regex_str, "[[:<:]]%s[[:>:]]", item);
         // sprintf(regex_str, "\\b%s\\b", item);
-        sprintf(regex_str, " %s[,.?!;]? ", item);
+        sprintf(regex_str, " [.-]*%s[,.?!;-]* ", item);
         regex_return = regcomp(&regex, regex_str, REG_EXTENDED);
         if (0 != regex_return) {
             char buffer[100];
@@ -98,7 +98,7 @@ static PyMethodDef myMethods[] = {
         "search_terms_in_text",  /* The function name in python */
         search_terms_in_text,    /* The C function to invoke. */
         METH_VARARGS,            /* Flag telling Python how to invoke ``search_terms_in_text`` */
-        "Search list of terms inside text. Return terms found in text."   /* The docstring as a C string. */
+        "Search list of terms inside text. Text has to be in lower case. Return terms found in text."   /* The docstring as a C string. */
     },
     {NULL, NULL, 0, NULL}
 };
