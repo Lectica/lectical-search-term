@@ -33,15 +33,43 @@ void print_result(int return_value){
   }
 }
 
+inline int search(const char * text, const char * item) {
+    char regex_str[REGEX_STR_LEN];
+    int regex_return;
+    regex_t regex;
+
+    memset(regex_str, 0, sizeof(char) * REGEX_STR_LEN);
+    // sprintf(regex_str, "[[:<:]]%s[[:>:]]", item);
+    // sprintf(regex_str, "\\b%s\\b", item);
+    //sprintf(regex_str, " [.-]*%s[,.?!;-]* ", item);
+    sprintf(regex_str, " [a-z.,-]*%s[,.?:!;-]* ", item);
+
+    regex_return = regcomp(&regex, regex_str, REG_EXTENDED);
+    if (0 != regex_return) {
+        char buffer[100];
+        printf ("Regex error compiling [%s] \n", regex_str);
+        regerror(regex_return, &regex, buffer, 100);
+        printf("regcomp() failed with '%s'\n", buffer);
+        /* cannot return same value from regcomp() */
+        return -255;
+    }
+    regex_return = regexec(&regex, text, 0, NULL, 0);
+
+    /* Free memory allocated to the pattern buffer by regcomp() */
+    regfree(&regex);
+
+    return regex_return;
+}
+
 static PyObject* search_terms_in_text(PyObject* self, PyObject * args) {
     // receive 2 parameters. List of terms and text
-    char regex_str[REGEX_STR_LEN];
-    const char * text = NULL;    PyObject * ret = NULL;    PyObject * pyListOfItems = NULL; PyObject * string;
-    PyObject *listOfTerms = PyList_New(0);
+    const char * text = NULL;
     const char * item;
-    // for regex
-    regex_t regex;
     int regex_return;
+    PyObject * ret = NULL;
+    PyObject * pyListOfItems = NULL;
+    PyObject * string;
+    PyObject *listOfTerms = PyList_New(0);
 
     // http://web.mit.edu/people/amliu/vrut/python/ext/parseTuple.html
     if (!PyArg_ParseTuple(args, "sO", &text, &pyListOfItems)) {
@@ -58,27 +86,15 @@ static PyObject* search_terms_in_text(PyObject* self, PyObject * args) {
         ret = PyUnicode_AsUTF8String(string);
         item = PyBytes_AsString(ret);
 
-        memset(regex_str, 0, sizeof(char) * REGEX_STR_LEN);
-        // sprintf(regex_str, "[[:<:]]%s[[:>:]]", item);
-        // sprintf(regex_str, "\\b%s\\b", item);
-        sprintf(regex_str, " [a-z.,-]*%s[,.?:!;-]* ", item);
-        regex_return = regcomp(&regex, regex_str, REG_EXTENDED);
-        if (0 != regex_return) {
-            char buffer[100];
-            printf ("Regex error compiling [%s] \n", regex_str);
-            regerror(regex_return, &regex, buffer, 100);
-            printf("regcomp() failed with '%s'\n", buffer);
-            continue;
-            exit(EXIT_FAILURE);
-        }
-        regex_return = regexec(&regex, text, 0, NULL, 0);
+        regex_return = search(text, item);
 
+        if (-255 == regex_return) {
+            /* some error in compiling regex, skip this term */
+            continue;
+        }
         if (0 == regex_return) {
             PyList_Append(listOfTerms, string);
         }
-
-        /* Free memory allocated to the pattern buffer by regcomp() */
-        regfree(&regex);
     }
 
     // Restore previous GIL state and return
