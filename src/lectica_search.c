@@ -35,7 +35,7 @@ void print_result(int return_value){
   }
 }
 
-inline int search(const char * text, const char * item) {
+int search(const char * text, const char * item) {
     char regex_str[REGEX_STR_LEN];
     int regex_return;
     regex_t regex;
