@@ -1,5 +1,7 @@
+
 #include <Python.h>
 #include <regex.h>
+#include <string.h>
 
 #define REGEX_STR_LEN 256
 
@@ -42,9 +44,9 @@ inline int search(const char * text, const char * item) {
     // sprintf(regex_str, "[[:<:]]%s[[:>:]]", item);
     // sprintf(regex_str, "\\b%s\\b", item);
     //sprintf(regex_str, " [.-]*%s[,.?!;-]* ", item);
-    sprintf(regex_str, " [a-z.,-]*%s[,.?:!;-]* ", item);
+    sprintf(regex_str, " [a-z.,-]*%s[a-z,.?:!;-]* ", item);
 
-    regex_return = regcomp(&regex, regex_str, REG_EXTENDED);
+    regex_return = regcomp(&regex, regex_str, REG_EXTENDED | REG_NOSUB);
     if (0 != regex_return) {
         char buffer[100];
         printf ("Regex error compiling [%s] \n", regex_str);
@@ -60,6 +62,7 @@ inline int search(const char * text, const char * item) {
 
     return regex_return;
 }
+
 
 static PyObject* search_terms_in_text(PyObject* self, PyObject * args) {
     // receive 2 parameters. List of terms and text
@@ -82,18 +85,21 @@ static PyObject* search_terms_in_text(PyObject* self, PyObject * args) {
 
     for (Py_ssize_t i = 0; i < PyList_GET_SIZE(pyListOfItems); i++) {
         string = PyList_GetItem(pyListOfItems, i);
-        if (string == NULL) {printf("Algum erro que eu nao sei o que eh: index [%d] list len [%d]\n", i, PyList_GET_SIZE(pyListOfItems)); }
+        if (string == NULL) {printf("Algum erro que eu nao sei o que eh: index [%zd] list len [%zd]\n", i, PyList_GET_SIZE(pyListOfItems)); }
         ret = PyUnicode_AsUTF8String(string);
         item = PyBytes_AsString(ret);
 
-        regex_return = search(text, item);
+        /* pre-filter */
+        if (strstr(text, item)) {
+            regex_return = search(text, item);
 
-        if (-255 == regex_return) {
-            /* some error in compiling regex, skip this term */
-            continue;
-        }
-        if (0 == regex_return) {
-            PyList_Append(listOfTerms, string);
+            if (-255 == regex_return) {
+                /* some error in compiling regex, skip this term */
+                continue;
+            }
+            if (0 == regex_return) {
+                PyList_Append(listOfTerms, string);
+            }
         }
     }
 
