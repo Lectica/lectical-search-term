@@ -3,7 +3,7 @@
 #include <regex.h>
 #include <string.h>
 
-#define REGEX_STR_LEN 256
+#define REGEX_STR_LEN 128
 
 
 int _check_list_of_numbers(PyObject *lst, void *address) {
@@ -65,10 +65,11 @@ int search(const char * text, const char * item) {
 
 
 static PyObject* search_terms_in_text(PyObject* self, PyObject * args) {
+    char regex_str[REGEX_STR_LEN];
     // receive 2 parameters. List of terms and text
     const char * text = NULL;
     const char * item;
-    int regex_return;
+    int regex_return = 0;
     PyObject * ret = NULL;
     PyObject * pyListOfItems = NULL;
     PyObject * string;
@@ -89,17 +90,11 @@ static PyObject* search_terms_in_text(PyObject* self, PyObject * args) {
         ret = PyUnicode_AsUTF8String(string);
         item = PyBytes_AsString(ret);
 
-        /* pre-filter */
-        if (strstr(text, item)) {
-            regex_return = search(text, item);
+        memset(regex_str, NULL, sizeof(char) * REGEX_STR_LEN);
+        sprintf(regex_str, " %s ", item);
 
-            if (-255 == regex_return) {
-                /* some error in compiling regex, skip this term */
-                continue;
-            }
-            if (0 == regex_return) {
-                PyList_Append(listOfTerms, string);
-            }
+        if (strstr(text, regex_str)) {
+            PyList_Append(listOfTerms, string);
         }
     }
 
